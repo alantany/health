@@ -3,23 +3,22 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import requests
-import io
 
 # 设置页面配置
-st.set_page_config(page_title="COVID-19国家数据分析", layout="wide")
+st.set_page_config(page_title="COVID-19全球数据分析", layout="wide")
 
 # 数据加载函数
 @st.cache_data
 def load_data():
-    url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = pd.read_csv(io.StringIO(response.content.decode('utf-8')))
+    try:
+        data = pd.read_csv("owid-covid-data.csv")
         st.success("数据加载成功")
         return data
-    else:
-        st.error(f"数据加载失败: {response.status_code}")
+    except FileNotFoundError:
+        st.error("数据文件未找到。请确保 'owid-covid-data.csv' 文件在正确的位置。")
+        return pd.DataFrame()
+    except Exception as e:
+        st.error(f"加载数据时出错: {e}")
         return pd.DataFrame()
 
 # 加载数据
@@ -221,20 +220,17 @@ else:
     # 填充 NaN 值
     time_series_data['new_cases'] = time_series_data['new_cases'].fillna(0)
 
-    # 创建一个新的列作为大小参数，确保没有负值
-    time_series_data['size'] = time_series_data['new_cases'].clip(lower=0) + 1
-
-    # 计算大小的范围
-    size_min = 5
-    size_max = 30
-    size_range = time_series_data['size'].max() - time_series_data['size'].min()
-    time_series_data['normalized_size'] = (time_series_data['size'] - time_series_data['size'].min()) / size_range * (size_max - size_min) + size_min
+    # 创建一个新的列作为大小参数，确保没有负值，并归一化到 5-30 的范围
+    min_size, max_size = 5, 30
+    time_series_data['normalized_size'] = ((time_series_data['new_cases'] - time_series_data['new_cases'].min()) / 
+                                           (time_series_data['new_cases'].max() - time_series_data['new_cases'].min()) * 
+                                           (max_size - min_size) + min_size)
 
     fig = px.scatter(time_series_data, 
                      x="date", 
                      y="new_cases",
                      color="location",
-                     size="normalized_size",  # 使用新创建的 'normalized_size' 列
+                     size="normalized_size",
                      hover_name="location",
                      animation_frame="date",
                      animation_group="location",
@@ -262,4 +258,4 @@ else:
     st.plotly_chart(fig)
 
 # 显示数据来源
-st.markdown("数据来源: [Our World in Data](https://github.com/owid/covid-19-data)")
+st.markdown("数据来源: 本地文件 'owid-covid-data.csv'")
