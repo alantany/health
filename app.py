@@ -78,7 +78,7 @@ else:
     elif chart_type == "饼图":
         fig = px.pie(data, values='total_cases', names='date', title=f"{selected_country}的累计病例")
     elif chart_type == "箱线图":
-        fig = px.box(data, x='date', y='total_cases', title=f"{selected_country}的累计病例")
+        fig = px.box(data, x='date', y='total_cases', title=f"{selected_country}的���计病例")
     elif chart_type == "热力图":
         fig = px.density_heatmap(data, x='date', y='total_cases', title=f"{selected_country}的累计病例")
     elif chart_type == "面积图":
@@ -98,7 +98,7 @@ else:
     elif chart_type == "散点图":
         fig = px.scatter(data, x='date', y='death_rate', title=f"{selected_country}的死亡率趋势")
     elif chart_type == "饼图":
-        fig = px.pie(data, values='death_rate', names='date', title=f"{selected_country}的死亡率趋势")
+        fig = px.pie(data, values='death_rate', names='date', title=f"{selected_country}的死亡率趋���")
     elif chart_type == "箱线图":
         fig = px.box(data, x='date', y='death_rate', title=f"{selected_country}的死亡率趋势")
     elif chart_type == "热力图":
@@ -156,7 +156,7 @@ else:
     elif chart_type == "箱线图":
         fig = px.box(top_10_cases, x='location', y='total_cases', title="总病例数前10的国家")
     elif chart_type == "热力图":
-        fig = px.density_heatmap(top_10_cases, x='location', y='total_cases', title="总病例数前10的国家")
+        fig = px.density_heatmap(top_10_cases, x='location', y='total_cases', title="总病���数前10的国家")
     elif chart_type == "面积图":
         fig = px.area(top_10_cases, x='location', y='total_cases', title="总病例数前10的国家")
     else:  # 直方图
@@ -210,33 +210,6 @@ else:
                         color='location',
                         hover_name='location',
                         title="3D视图：总病例、每百万人口病例数和死亡率")
-    st.plotly_chart(fig)
-
-    # 动态时间序列图
-    st.subheader("动态时间序列：每日新增病例")
-    top_10_countries = latest_data.nlargest(10, 'total_cases')['location'].tolist()
-    time_series_data = full_data[full_data['location'].isin(top_10_countries)]
-
-    # 填充 NaN 值
-    time_series_data['new_cases'] = time_series_data['new_cases'].fillna(0)
-
-    # 创建一个新的列作为大小参数，确保没有负值，并归一化到 5-30 的范围
-    min_size, max_size = 5, 30
-    time_series_data['normalized_size'] = ((time_series_data['new_cases'] - time_series_data['new_cases'].min()) / 
-                                           (time_series_data['new_cases'].max() - time_series_data['new_cases'].min()) * 
-                                           (max_size - min_size) + min_size)
-
-    fig = px.scatter(time_series_data, 
-                     x="date", 
-                     y="new_cases",
-                     color="location",
-                     size="normalized_size",
-                     hover_name="location",
-                     animation_frame="date",
-                     animation_group="location",
-                     range_y=[0, time_series_data['new_cases'].max()],
-                     title="动态时间序列：每日新增病例（前10个国家）")
-
     st.plotly_chart(fig)
 
     # 交互式仪表板
